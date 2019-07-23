@@ -7,7 +7,7 @@ export default class App extends React.Component {
 	constructor(props){
 		super(props);
 		this.state = {
-			searchSite: 'http://ec2-18-217-166-165.us-east-2.compute.amazonaws.com',
+			searchSite: '',
 			itemList: [],
 			dropDownImage: {category: '', images: []},
 			itemHovered: false,

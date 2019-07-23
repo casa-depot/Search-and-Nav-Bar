@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
+const config = require('../config.js');
 
-mongoose.connect('mongodb+srv://Michael:@cluster0-ibbip.mongodb.net/homedepot?retryWrites=true&w=majority');
-
+mongoose.connect(`mongodb+srv://Michael:${config.MONGO}@cluster0-ibbip.mongodb.net/homedepot?retryWrites=true&w=majority`);
+// mongoose.connect('mongodb://localhost/SDC', {useNewUrlParser: true});
 const saltRounds = 10;
 
 let itemSchema = mongoose.Schema({
