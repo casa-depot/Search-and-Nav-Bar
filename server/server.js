@@ -34,7 +34,7 @@ app.get('/allItems', (req, res) => {
     if (Object.keys(req.cookies.HomeDepotCookie)){
       db.getAllandCart(req.query, req.cookies.HomeDepotCookie, (data, cart, user) => {
         res.send({data: data, cart: cart, login: user})
-      })}else {
+      })} else {
         res.cookie('HomeDepotCookie', newCookie)
         db.getAllandCart(req.query, newCookie, (data, cart, user) => {
           res.send({data: data, cart: cart, login: user})

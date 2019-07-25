@@ -1,4 +1,4 @@
-const fake = require('faker');
+const faker = require('faker');
 
 const config = require('../config.js');
 const mongoose = require('mongoose');
@@ -13,7 +13,7 @@ db.once('open', function() {
 });
 
 let itemSchema = mongoose.Schema({
-  id: String,
+  id: Number,
   name: String,
   price: Number,
   category: String
@@ -40,7 +40,34 @@ const userViewsSchema = mongoose.Schema({
   id: Number
 })
 
-const itemList = mongoose.model('ItemList', itemSchema);
+const item = mongoose.model('Item', itemSchema);
 const cartList = mongoose.model('Cart', cartSchema);
 const usersList = mongoose.model('UserList', usersSchema);
 const userViews = mongoose.model('UserViews', userViewsSchema);
+
+
+async function save (start) {
+  let end = start + 100000
+  let items =[];
+  for (let index = start; index < end; index++) {
+    const newItem = new item({
+      id: index,
+      name: faker.commerce.productName(),
+      price: faker.commerce.price(),
+      category: faker.commerce.department()
+    })
+    items.push(newItem);
+  }
+  item.collection.insertMany(items).then((result) => {
+    console.log(`saved 100000 more! from ${start} to ${end-1}`);
+    if(start < 10000000) {
+      save(end);
+    } else {
+      console.timeEnd('performance')
+    }
+  }).catch((err) => {
+    console.log('ERROR: ', err);
+  })
+}
+console.time('performance')
+save(1);
