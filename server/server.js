@@ -20,25 +20,32 @@ const corsOptions = {
 
 const app = express();
 
+app.use(express.static(path.join(__dirname, '../dist')));
 app.use(cors(corsOptions));
 app.use(cookieParser())
-app.use(express.static(path.join(__dirname, '../dist')));
 app.use(parser.json());
+app.use((req, res ,next) => {
+  console.log('Recieved ' + req.method + ' request to ' + req.url);
+  next()
+})
 
 
-app.listen(3050, ()=>console.log('listening on port 3050'));
+
 
 app.get('/allItems', (req, res) => {
+  console.log(req.query.keyword)
   let newCookie = crypto.randomBytes(20).toString('hex')
   if (Object.keys(req.cookies).length){
     if (Object.keys(req.cookies.HomeDepotCookie)){
       db.getAllandCart(req.query, req.cookies.HomeDepotCookie, (data, cart, user) => {
+        // console.log('data:', data);
         res.send({data: data, cart: cart, login: user})
-      })} else {
-        res.cookie('HomeDepotCookie', newCookie)
-        db.getAllandCart(req.query, newCookie, (data, cart, user) => {
-          res.send({data: data, cart: cart, login: user})
-        })}
+      })
+    } else {
+      res.cookie('HomeDepotCookie', newCookie)
+      db.getAllandCart(req.query, newCookie, (data, cart, user) => {
+        res.send({data: data, cart: cart, login: user})
+      })}
 	} else {
     res.cookie('HomeDepotCookie', newCookie)
     db.getAllandCart(req.query, newCookie, (data, cart, user) => {
@@ -101,3 +108,5 @@ app.get('/getCart', (req, res) => {
     res.send(data)
   })
 })
+
+app.listen(3000, ()=>console.log('listening on port 3000'));

@@ -30,9 +30,9 @@ export default class App extends React.Component {
 	}
 
 	componentDidMount() {
-		this.appendScript("https://code.jquery.com/jquery-3.3.1.slim.min.js");
-		this.appendScript("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js");
-		this.appendScript("ttps://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js");
+		// this.appendScript("https://code.jquery.com/jquery-3.3.1.slim.min.js");
+		// this.appendScript("https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.0/umd/popper.min.js");
+		// this.appendScript("https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js");
 		window.addEventListener('updatePath', (e) => {
 			let newLogin = this.state.login;
 			let addNewView = true;
@@ -82,29 +82,29 @@ export default class App extends React.Component {
 			axios.post(`${this.state.searchSite}/addToCart`, {tempCart}, {withCredentials: true})
 			.then(()=> {console.log('success')})
 		})
-		axios.get(`${this.state.searchSite}/allItems`, {params: {name: this.state.login.name}, withCredentials: true})
-		.then((results) => {
-			let itemList = [];
-			results.data.data.map(item => {
-				if (item.name.length > 40){
-					itemList.push({name: item.name.substring(0, 40) + "...", id: item.id, price: item.price, category: item.category});
-				} else {
-				itemList.push({name: item.name, id: item.id, price: item.price, category: item.category})}
-			});
-			this.setState({itemList: itemList});
-			if (results.data.cart){
-				let newCart = this.state.cart;
-				results.data.cart.map((item => {
-					newCart.numberOfItems += item.quantity;
-					newCart.cartList.push({id: item.id, price: item.price, name: item.name, quantity: item.quantity})
-					newCart.totalPrice += item.price;
-				}))
-				this.setState({cart: newCart});
-			}
-			if (results.data.login.name !== ''){
-				this.setState({login: results.data.login})
-			}
-		})
+		// axios.get(`${this.state.searchSite}/allItems`, {params: {name: this.state.login.name}, withCredentials: true})
+		// .then((results) => {
+		// 	let itemList = [];
+		// 	results.data.data.map(item => {
+		// 		if (item.name.length > 40){
+		// 			itemList.push({name: item.name.substring(0, 40) + "...", id: item.id, price: item.price, category: item.category});
+		// 		} else {
+		// 		itemList.push({name: item.name, id: item.id, price: item.price, category: item.category})}
+		// 	});
+		// 	this.setState({itemList: itemList});
+		// 	if (results.data.cart){
+		// 		let newCart = this.state.cart;
+		// 		results.data.cart.map((item => {
+		// 			newCart.numberOfItems += item.quantity;
+		// 			newCart.cartList.push({id: item.id, price: item.price, name: item.name, quantity: item.quantity})
+		// 			newCart.totalPrice += item.price;
+		// 		}))
+		// 		this.setState({cart: newCart});
+		// 	}
+		// 	if (results.data.login.name !== ''){
+		// 		this.setState({login: results.data.login})
+		// 	}
+		// })
 	}
 	
 	appendScript(url) {
@@ -125,15 +125,43 @@ export default class App extends React.Component {
 		if (e.target.value === ''){
 		 this.setState({showSuggest: false})
 		} else {
-		let currentList = [];
-		let {itemList} = this.state;
-		for (let i = 0; i < itemList.length; i++){
-			if (itemList[i].name.toLowerCase().includes(e.target.value.toLowerCase())){
-				currentList.push(itemList[i]);
+			if(e.target.value.length >= 1) {
+				console.log('hi');
+				console.time('query');
+				axios.get(`${this.state.searchSite}/allItems`, {params: {name: this.state.login.name, keyword: e.target.value}, withCredentials: true})
+				.then((results) => {
+					// console.log(results.data.data);
+					let itemList = results.data.data.map(item => {
+						return ({name: item.name, id: item.id, price: item.price, category: item.category})
+					});
+					this.setState({itemList: itemList}, () => {
+						let currentList = [];
+						let {itemList} = this.state;
+						for (let i = 0; i < itemList.length; i++){
+							if (itemList[i].name.toLowerCase().includes(this.state.inputValue.toLowerCase())){
+								currentList.push(itemList[i]);
+							}
+						}
+						this.setState({suggestList: currentList, showSuggest: true});
+					});
+					if (results.data.cart){
+						let newCart = this.state.cart;
+						results.data.cart.map((item => {
+							newCart.numberOfItems += item.quantity;
+							newCart.cartList.push({id: item.id, price: item.price, name: item.name, quantity: item.quantity})
+							newCart.totalPrice += item.price;
+						}))
+						this.setState({cart: newCart});
+					}
+					if (results.data.login.name !== ''){
+						this.setState({login: results.data.login})
+					}
+				})
 			}
+			this.setState({inputValue: e.target.value, showSuggest: true}, () => {
+				console.timeEnd('query')
+			})
 		}
-		this.setState({inputValue: e.target.value, suggestList: currentList, showSuggest: true});
-	}
 	}
 
 	loseFocusSearch(){

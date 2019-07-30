@@ -1,16 +1,30 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
-const config = require('../config.js');
+// const bcrypt = require('bcrypt');
+// const config = require('../config.js');
+// const {Pool} = require('pg')
+var conString = "postgres://DJ@localhost:5432/sdc";
+// const db = new Pool({
+//   connectionString: conString
+// })
+
 
 // mongoose.connect(`mongodb+srv://Michael:${config.MONGO}@cluster0-ibbip.mongodb.net/homedepot?retryWrites=true&w=majority`);
-mongoose.connect('mongodb://localhost/casadepot', {useNewUrlParser: true});
+mongoose.connect('mongodb://mongo/casadepot', {useNewUrlParser: true}).catch((err) => {
+  console.log(err);
+});
+
+
+// const db = mongoose.connection;
+const Schema = mongoose.Schema;
 const saltRounds = 10;
 
-let itemSchema = mongoose.Schema({
+let itemSchema = new mongoose.Schema({
   id: String,
   name: String,
   price: Number,
-  category: String
+  category: String,
+}, {
+  collection: 'items'
 });
 
 const cartSchema = mongoose.Schema({
@@ -34,7 +48,7 @@ const userViewsSchema = mongoose.Schema({
   id: Number
 })
 
-const itemList = mongoose.model('ItemList', itemSchema);
+const itemList = mongoose.model('itemList', new Schema({}), 'items');
 const cartList = mongoose.model('Cart', cartSchema);
 const usersList = mongoose.model('UserList', usersSchema);
 const userViews = mongoose.model('UserViews', userViewsSchema);
@@ -75,8 +89,10 @@ const getAll = (cb) => {
 }
 
 const getAllandCart = (creds, cookie, cb) => {
-  itemList.find()
+  console.log('here ', creds.keyword);
+  itemList.find({$text : {$search: creds.keyword} , views: { $gt: 600}}).limit(10)
   .then((data) => {
+    console.log(data);
     usersList.find({sessionCookie:cookie})
     .then((users) => {
       let login = {name: '', previouslyViewed: [], showLoginScreen: false, error: ''};
@@ -98,6 +114,34 @@ const getAllandCart = (creds, cookie, cb) => {
   })
 }
 
+// const getAllandCart = (creds, cookie, cb) => {
+//   console.log('here ', creds.keyword);
+
+//   // itemList.find({$text : {$search: creds.keyword} , views: { $gt: 600}}).limit(10)
+//   db.query(`SELECT * from items WHERE name ILIKE '%${creds.keyword}%' ORDER BY views DESC LIMIT 10`)
+//   .then((data) => {
+//     console.log(data.rows);
+//     usersList.find({sessionCookie:cookie})
+//     .then((users) => {
+//       let login = {name: '', previouslyViewed: [], showLoginScreen: false, error: ''};
+//       if (users.length !== 0){
+//         login.name = users[0].username;
+//         cartList.find({$or:[{username:login.name}, {cookie: cookie}]})
+//         .then((results) => {
+//           console.log(results)
+//           results.map((item) => login.previouslyViewed.push(item.id))
+//           cb(data.rows, results, login);
+//         })
+//       } else {
+//       cartList.find({$or:[{username:creds.name}, {cookie: cookie}]})
+//       .then((results) => {
+//         cb(data.rows, results, login);
+//       })
+//     }
+//     })
+//   })
+// }
+
 //login: {
 //   name: '',
 //   previouslyViewed: [],
@@ -113,14 +157,14 @@ const newAccount = (creds, cookie, cb) => {
   usersList.find({username: creds.username})
   .then((data) => {
     if (data.length === 0){
-      bcrypt.hash(creds.password, saltRounds, function(err, hash) {
-        let newUser = new usersList({
-          username: creds.username,
-          sessionCookie: cookie,
-          password: hash
-        })
-        newUser.save(() => cb('Logged In'))
-      });
+      // bcrypt.hash(creds.password, saltRounds, function(err, hash) {
+      //   let newUser = new usersList({
+      //     username: creds.username,
+      //     sessionCookie: cookie,
+      //     password: hash
+      //   })
+      //   newUser.save(() => cb('Logged In'))
+      // });
     } else {
       cb('username exists');
     }
@@ -134,14 +178,14 @@ const login = (creds, cookie, cb) => {
       cb('username does not exist');
       return;
     } else {
-      bcrypt.compare(creds.password, data[0].password, function(err, res) {
-        if (res) {
-          usersList.update({username: creds.username}, {sessionCookie: cookie})
-          .then(() => cb('Logged In'))
-        } else {
-          cb('Password incorrect')
-        }
-      });
+      // bcrypt.compare(creds.password, data[0].password, function(err, res) {
+      //   if (res) {
+      //     usersList.update({username: creds.username}, {sessionCookie: cookie})
+      //     .then(() => cb('Logged In'))
+      //   } else {
+      //     cb('Password incorrect')
+      //   }
+      // });
     }
   })
 }

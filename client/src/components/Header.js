@@ -53,7 +53,7 @@ const Header = (props) => {
                     {props.suggestList.map((item) => 
                       <div key = {item.id} className = "listclickMichael dropdown-item" onClick = {props.renderNewItem}>
                         <span id = {item.id}>{item.name} </span>
-                        <img className = 'd-none d-md-inline' style = {{position: 'relative', float: 'right', top: '-4px'}}height = '33px' src={`https://home-de-potts.s3.us-east-2.amazonaws.com/items/${item.id}-0.jpg`} />
+                        {/* <img className = 'd-none d-md-inline' style = {{position: 'relative', float: 'right', top: '-4px'}}height = '33px' src={`https://home-de-potts.s3.us-east-2.amazonaws.com/items/${item.id}-0.jpg`} /> */}
                       </div>)}
                   </div>
                 ) : (<></>)}
