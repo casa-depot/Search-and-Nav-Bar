@@ -4,26 +4,30 @@ const parser = require('body-parser');
 const cors = require('cors');
 const path = require('path');
 const db = require('./db');
-const crypto = require("crypto");
-const whitelist = ['http://homedepott.us-east-2.elasticbeanstalk.com', 'http://localhost:3000','http://localhost:3005','http://localhost:3050', 'http://ec2-18-217-166-165.us-east-2.compute.amazonaws.com', 'http://homedepot.us-east-2.elasticbeanstalk.com'];
+// const crypto = require("crypto");
+// const whitelist = ['http://homedepott.us-east-2.elasticbeanstalk.com', 'http://localhost:3000','http://localhost:3005','http://localhost:3050', 'http://ec2-18-217-166-165.us-east-2.compute.amazonaws.com', 'http://homedepot.us-east-2.elasticbeanstalk.com'];
 
-const corsOptions = {
-  credentials: true,
-  origin: function(origin, callback) {
-    if (whitelist.indexOf(origin) !== -1 || !origin) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
-    }
-  }
-}
+// const corsOptions = {
+//   credentials: true,
+//   origin: function(origin, callback) {
+//     if (whitelist.indexOf(origin) !== -1 || !origin) {
+//       callback(null, true)
+//     } else {
+//       callback(new Error('Not allowed by CORS'))
+//     }
+//   }
+// }
 
 const app = express();
+// app.get('/', (req, res) => {
+//   console.log(Math.random())
+//   res.status(200).send();
+// })
 
 app.use(express.static(path.join(__dirname, '../dist')));
-app.use(cors(corsOptions));
-app.use(cookieParser())
-app.use(parser.json());
+// app.use(cors(corsOptions));
+// app.use(cookieParser())
+// app.use(parser.json());
 app.use((req, res ,next) => {
   console.log('Recieved ' + req.method + ' request to ' + req.url);
   next()
@@ -108,5 +112,6 @@ app.get('/getCart', (req, res) => {
     res.send(data)
   })
 })
+
 
 app.listen(3000, ()=>console.log('listening on port 3000'));

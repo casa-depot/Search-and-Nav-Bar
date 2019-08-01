@@ -1,17 +1,35 @@
-version: "2"
+version: "3.7"
 services:
   mongo:
-    container_name: mongo
     image: mongo
-    # volumes:
-    #   - ./data:/data/db
     ports:
       - "27017:27017"
+    networks: 
+      - webnet
   app:
-    container_name: app
-    restart: always
-    build: .
+    image: dongjae93/sdc
+    deploy:
+      replicas: 4
+      restart_policy:
+        condition: on-failure
+      placement:
+        constraints: [node.role != manager]	
     ports:
       - "80:3000"
-    links:
+    depends_on:
       - mongo
+    networks: 
+      - webnet
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+    networks:
+      - webnet
+networks: 
+    webnet:
